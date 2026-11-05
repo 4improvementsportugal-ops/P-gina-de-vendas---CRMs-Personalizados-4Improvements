@@ -393,7 +393,7 @@ body {background:#f6f4f0;color:#16171c}
      metaPixelId: ID do Meta Pixel; googleAdsId: ID AW-...; googleAdsConversionLabel: label de conversão.
      Requer implementar/validar política de privacidade, consentimento e regras RGPD.
   */
-  const CONFIG = { webhookUrl:'', metaPixelId:'', googleAdsId:'', googleAdsConversionLabel:'' };
+  const CONFIG = { webhookUrl:'https://services.leadconnectorhq.com/hooks/lwdT8imgib43lDC9X1SC/webhook-trigger/w70W8oJwRAkHgPC8VTec', metaPixelId:'1190659816630727', googleAdsId:'', googleAdsConversionLabel:'' };
   const $ = (sel,root=document)=>root.querySelector(sel);
   $('#copyright-year').textContent=String(new Date().getFullYear());
   function message(form,text,success){const el=$('.form-status',form);el.textContent=text;el.classList.toggle('success',!!success);}
@@ -409,7 +409,8 @@ body {background:#f6f4f0;color:#16171c}
       if(!name||!email)return;
       if(!CONFIG.webhookUrl){message(form,'O formulário ainda está a ser configurado. A ligação ao CRM deve ser ativada antes da publicação.',false);return;}
       button.disabled=true;button.setAttribute('aria-busy','true');message(form,'A enviar o seu pedido…',false);
-      const payload={nome:name,email:email,whatsapp:whatsapp,origem:form.dataset.origin,produto:'CRM personalizado imobiliário',pagina:location.href,data:new Date().toISOString()};
+      const digits=whatsapp.replace(/\D/g,'').replace(/^00/,'');const phone=digits?(digits.startsWith('351')?digits:'351'+digits):'';const parts=name.split(/\s+/);const firstName=parts[0]||'';const lastName=parts.slice(1).join(' ');
+      const payload={name:name,first_name:firstName,last_name:lastName,email:email,phone:phone,nome:name,whatsapp:whatsapp,origem:form.dataset.origin,produto:'CRM personalizado imobiliário',pagina:location.href,data:new Date().toISOString()};
       try{
         const response=await fetch(CONFIG.webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
         if(!response.ok)throw new Error('HTTP '+response.status);
