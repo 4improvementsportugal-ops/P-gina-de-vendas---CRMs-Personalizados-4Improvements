@@ -372,7 +372,7 @@ body {background:#f6f4f0;color:#16171c}
 <form class="contact-form" data-origin="formulario_final">
 <div class="form-field"><label class="field-label" for="nome-final">O seu nome</label><input autocomplete="name" class="form-input" id="nome-final" maxlength="120" name="nome" placeholder="Como se chama?" required=""/></div>
 <div class="form-field"><label class="field-label" for="email-final">E-mail profissional</label><input autocomplete="email" class="form-input" id="email-final" maxlength="250" name="email" placeholder="nome@imobiliaria.pt" required="" type="email"/></div>
-<div class="form-field"><label class="field-label" for="telefone-final">WhatsApp <span style="font-weight:500;color:#888">(opcional)</span></label><input autocomplete="tel" class="form-input" id="telefone-final" maxlength="30" name="whatsapp" placeholder="+351 9XX XXX XXX" type="tel"/></div>
+<div class="form-field"><label class="field-label" for="telefone-final">WhatsApp *</label><input autocomplete="tel" class="form-input" id="telefone-final" maxlength="30" name="whatsapp" placeholder="+351 9XX XXX XXX" required="" type="tel"/></div>
 <button class="btn form-btn" type="submit">Enviar pedido de contacto <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg></button>
 <p class="form-small"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><rect height="11" rx="2" width="14" x="5" y="10"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>Os dados fornecidos serão utilizados para responder ao seu pedido. Sem compromisso.</p><p aria-live="polite" class="form-status" role="status"></p>
 </form></div>
@@ -390,7 +390,7 @@ body {background:#f6f4f0;color:#16171c}
      metaPixelId: ID do Meta Pixel; googleAdsId: ID AW-...; googleAdsConversionLabel: label de conversão.
      Requer implementar/validar política de privacidade, consentimento e regras RGPD.
   */
-  const CONFIG = { webhookUrl:'https://services.leadconnectorhq.com/hooks/lwdT8imgib43lDC9X1SC/webhook-trigger/w70W8oJwRAkHgPC8VTec', metaPixelId:'1190659816630727', googleAdsId:'', googleAdsConversionLabel:'' };
+  const CONFIG = { webhookUrl:'', metaPixelId:'', googleAdsId:'', googleAdsConversionLabel:'' };
   const BOOKING_URL = 'https://api.leadconnectorhq.com/widget/booking/H5vPg7VYHLOraN6VSC6k';
   const $ = (sel,root=document)=>root.querySelector(sel);
   $('#copyright-year').textContent=String(new Date().getFullYear());
@@ -409,18 +409,17 @@ body {background:#f6f4f0;color:#16171c}
     form.addEventListener('submit',async evt=>{
       evt.preventDefault();if(!form.reportValidity())return;
       const button=$('button[type=submit]',form);const name=form.elements.nome.value.trim();const email=form.elements.email.value.trim();const whatsapp=form.elements.whatsapp.value.trim();
-      if(!name||!email)return;
+      if(!name||!email||!whatsapp)return;
       // Sem um webhook configurado, o formulário valida e avança para a marcação,
       // mas não guarda os dados no CRM. Para captar leads, configurar CONFIG.webhookUrl.
       if(!CONFIG.webhookUrl){location.assign(BOOKING_URL);return;}
       button.disabled=true;button.setAttribute('aria-busy','true');message(form,'A enviar o seu pedido…',false);
-      const digits=whatsapp.replace(/\D/g,'').replace(/^00/,'');const phone=digits?(digits.startsWith('351')?digits:'351'+digits):'';const parts=name.split(/\s+/);const firstName=parts[0]||'';const lastName=parts.slice(1).join(' ');
-      const payload={name:name,first_name:firstName,last_name:lastName,email:email,phone:phone,nome:name,whatsapp:whatsapp,origem:form.dataset.origin,produto:'CRM personalizado imobiliário',pagina:location.href,data:new Date().toISOString()};
+      const payload={nome:name,email:email,whatsapp:whatsapp,origem:form.dataset.origin,produto:'CRM personalizado imobiliário',pagina:location.href,data:new Date().toISOString()};
       try{
         const response=await fetch(CONFIG.webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
         if(!response.ok)throw new Error('HTTP '+response.status);
         sendConversion();
-        setTimeout(()=>location.assign(BOOKING_URL),400);
+        location.assign(BOOKING_URL);
       }catch(error){message(form,'Não foi possível enviar o pedido. Por favor, tente novamente.',false);}
       finally{button.disabled=false;button.removeAttribute('aria-busy');}
     });
