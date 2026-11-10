@@ -392,6 +392,12 @@ body {background:#f6f4f0;color:#16171c}
   */
   const CONFIG = { webhookUrl:'https://services.leadconnectorhq.com/hooks/lwdT8imgib43lDC9X1SC/webhook-trigger/w70W8oJwRAkHgPC8VTec', metaPixelId:'1190659816630727', googleAdsId:'', googleAdsConversionLabel:'' };
   const BOOKING_URL = 'https://api.leadconnectorhq.com/widget/booking/H5vPg7VYHLOraN6VSC6k';
+  // Cópia de segurança de cada lead para a folha «Leads LP 4Improvements» (Apps Script). Independente do GHL.
+  const LEADS_SHEET_URL = 'https://script.google.com/macros/s/AKfycbz6St63xXdWNPAkrk8BWf6qBnjmi2Y_JiIbFNSfU5YoG9wmHtM6h5ESmJI8oNREttXn/exec';
+  function sendToSheet(payload){
+    if(!LEADS_SHEET_URL)return;
+    try{fetch(LEADS_SHEET_URL,{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}).catch(()=>{});}catch(e){}
+  }
   const $ = (sel,root=document)=>root.querySelector(sel);
   $('#copyright-year').textContent=String(new Date().getFullYear());
   function message(form,text,success){const el=$('.form-status',form);el.textContent=text;el.classList.toggle('success',!!success);}
@@ -417,6 +423,7 @@ body {background:#f6f4f0;color:#16171c}
       const digits=whatsapp.replace(/\D/g,'').replace(/^00/,'');const phone=digits?(digits.startsWith('351')?digits:'351'+digits):'';const parts=name.split(/\s+/);const firstName=parts[0]||'';const lastName=parts.slice(1).join(' ');
       const payload={name:name,first_name:firstName,last_name:lastName,email:email,phone:phone,nome:name,whatsapp:whatsapp,origem:form.dataset.origin,produto:'CRM personalizado imobiliário',pagina:location.href,data:new Date().toISOString()};
       try{
+        sendToSheet(payload);
         const response=await fetch(CONFIG.webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
         if(!response.ok)throw new Error('HTTP '+response.status);
         sendConversion();
